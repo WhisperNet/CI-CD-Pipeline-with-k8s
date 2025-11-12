@@ -62,7 +62,7 @@ pipeline {
                 script{
                     echo "Committing the incremented version"
                     def branch = "master"
-                    def gitCreds = "deploy-key-jva"
+                    def gitCreds = "github-repo-access"
                     def origin = "git@github.com:WhisperNet/CI-CD-Pipeline-with-k8s.git"
                     pushVersioIncrement(branch, gitCreds,origin)
                 }
