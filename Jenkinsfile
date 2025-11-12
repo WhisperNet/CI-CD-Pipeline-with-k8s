@@ -1,20 +1,45 @@
 #!/usr/bin/env groovy
-
+library identifier: 'jenkins-shared-library-master@main', retriever: modernSCM(
+    [$class: 'GitSCMSource',
+    remote: 'https://github.com/WhisperNet/jenkins-shared-library-master.git'
+    ]
+)
 pipeline {
     agent any
-    stages{
-        stage('build app'){
-            steps{
+    tools {
+        maven 'maven-3.9.11'
+    }
+    stages {
+        stage("test"){
+            steps {
                 script{
-                    echo "Building the application"
+                    sh "mvn test"
                 }
             }
         }
-        stage('build and push image') {
+        stage("Increment version"){
             steps{
-                script {
-                    echo "Building image"
-                    echo "Pushing image"
+                script{
+                    incrementVersionMvn()
+                }
+            }
+        }
+        stage("build jar"){
+            steps{
+                script{
+                    echo "Building jar"
+                    buildJar()
+                }
+            }
+        }
+        stage("build and push docker image"){
+            steps{
+                script{
+                    echo "Building and pushing the docker image"
+                    def credentialsId = "docker-hub"
+                    buildImage("whispernet/java-app-k8s-cicd:${env.IMAGE_NAME}")
+                    dockerLogin(credentialsId)
+                    dockerPush("whispernet/java-app-k8s-cicd:${env.IMAGE_NAME}")
                 }
             }
         }
@@ -26,7 +51,9 @@ pipeline {
             steps{
                 script{
                     echo "Deploying nginx image to the eks"
-                    sh 'kubectl create deployment nginx-deployment --image=nginx'
+                    sh 'envsubst < java-depl.yaml >> java-depl-tmp.yaml'
+                    sh 'kubectl apply -f java-depl-tmp.yaml'
+                    sh 'rm java-depl-tmp.yaml'
                 }
             }
         }
