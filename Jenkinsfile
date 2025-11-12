@@ -57,5 +57,17 @@ pipeline {
                 }
             }
         }
+        stage("Commit incremented version"){
+            steps{
+                script{
+                    echo "Committing the incremented version"
+                    def branch = "master"
+                    def gitCreds = "deploy-key-jva"
+                    def origin = "git@github.com:WhisperNet/java-app-cicd.git"
+                    pushVersioIncrement(branch, gitCreds,origin)
+                }
+            }
+        }
     }
+
 }
