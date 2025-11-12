@@ -12,6 +12,8 @@ spec:
       labels:
         app: java-app
     spec:
+      imagePullSecrets:
+        - name: dockerhub-key
       containers:
         - name: java-app-container
           image: whispernet/java-app-k8s-cicd:${IMAGE_NAME}
